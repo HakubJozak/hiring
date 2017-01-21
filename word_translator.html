@@ -47,11 +47,251 @@
     float: right;
     width: 25%;
   }
+  
+  .text-translated {
+  	color:#0D0;
+  }
+
+	#known-translations li {
+		list-style-type: none;
+	}
+	
+	body, document {
+		font-family: Aral, sans-serif;
+	}  
 </style>
 <script type="application/javascript">
   "use strict";
   (function(){
     // YOUR CODE GOES HERE
+
+  	var known_words = [];
+  	var old_text;
+
+  	/*
+  		The website says, it already knows some words, so let's add some:
+  	*/
+  	var new_word = {};
+	new_word.source = 'hello';
+	new_word.translation = 'ahoj';
+	known_words.push(new_word);
+	new_word = {};
+	new_word.source = 'how';
+	new_word.translation = 'jak';
+	known_words.push(new_word);
+	new_word = {};
+	new_word.source = 'yes';
+	new_word.translation = 'ano';
+	known_words.push(new_word);
+	new_word = {};
+	new_word.source = 'no';
+	new_word.translation = 'ne';
+	known_words.push(new_word);
+	display_known_words();
+  
+  
+  	/*
+  		Handle the adding of word pairs
+  	*/
+  	$("#learn-translate").click(
+  		function(){
+  			var new_source_word = $.trim($("#source-word").val());
+  			var new_translation_word = $.trim($("#translation-word").val());
+  			
+  			/*
+  				Make sure new words are not empty
+  			*/
+  			if (new_source_word === '') {
+  				alert('Please enter a Source word!');
+  				return;
+  			} else if (new_translation_word === '') {
+  				alert('Please enter a Translation word!');
+  				return;
+  			}
+  			
+  			/*
+  				Make sure the pair doesn't already exist
+  			*/
+  			if (pair_exists(new_source_word, new_translation_word)) {
+  				alert('This word pair already exists!');
+  				return;
+  			}
+  			
+  			/*
+  				If the source word already exists => the pair needs to be updated. Simply delete the old pair and add the new pair.
+  			*/
+  			var need_update = source_word_exists(new_source_word);
+  			if (need_update !== false) {
+  				remove_word(need_update);
+  			}
+  			
+  			/*
+  				Add the word pair
+  			*/
+  			var new_word = {};
+		  	new_word.source = new_source_word;
+		  	new_word.translation = new_translation_word;
+		  	known_words.push(new_word);
+		  	
+		  	/*
+		  		Refresh the list
+		  	*/
+		  	display_known_words();
+  			
+		  	/*
+		  		Refresh the translation with the new list
+		  	*/
+		  	var text = $.trim($('#translate-box').val());
+		  	translate(text);
+  		}
+
+  	);
+
+
+	/*
+		Handle the removal of word pairs
+	*/
+	$(document).on('click','[id^=remove_]',
+		function(){
+			
+			/*
+				Get the index of the word pair from the id of the html element
+			*/
+			var index = $(this).attr('id').substring($(this).attr('id').length-1, $(this).attr('id').length);
+			
+			/*
+				Remove the item
+			*/
+			remove_word(index);
+
+			/*
+		  		Refresh the list
+		  	*/
+		  	display_known_words();
+		  	
+		  	/*
+		  		Refresh the translation with the new list
+		  	*/
+		  	var text = $.trim($('#translate-box').val());
+		  	translate(text);
+		}
+	);
+	
+	
+	/*
+		Check the translation box for changes
+	*/
+	$('#translate-box').keyup(
+		function(){
+			
+			var text = $.trim($(this).val());
+			
+			/*
+				Check if text has changed
+			*/
+			if (text == old_text) {
+				return;
+			}
+			old_text = text;
+
+			translate(text);
+			
+		}
+	);
+
+
+	/*
+		Replace all known words
+		Make sure that we don't translate substrings
+	*/
+	function translate(text) {
+
+		for (var i=0; i<known_words.length; i++)
+		{
+			text = text.replace(
+			new RegExp('\\b'+known_words[i].source+'\\b','gmui'),
+			'<span class="text-translated">'+known_words[i].translation+'</span>');
+		}
+		
+		/*
+			Display the result
+		*/
+		text = text.replace('\n', '<br>');
+		
+		$('#translation-result').html(text);
+	}
+
+
+	/*
+		Check if a word pair exists in the list of known words
+		If yes, then return its index in the array.
+	*/
+	function source_word_exists(source) {
+
+		for (var i=0; i<known_words.length; i++)
+		{
+			if (known_words[i].source == source) {
+				return i;
+			}
+		}
+		
+		return false;
+	}
+
+
+	/*
+		Check if a word pair exists in the list of known words
+	*/
+	function pair_exists(source, translation) {
+
+		for (var i=0; i<known_words.length; i++)
+		{
+			if (known_words[i].source == source && known_words[i].translation == translation) {
+				return true;
+			}
+		}
+		
+		return false;
+	}
+
+
+	/*
+		Remove a word pair from the list of known words
+	*/
+	function remove_word(index) {
+		
+		known_words.splice(index, 1);
+		
+	}
+  		
+  	/*
+  		Populate or refresh the list of known words
+  	*/
+	function display_known_words() {
+	
+		var all_translations = '';
+
+
+		/*
+			Sort the array
+		*/
+		known_words.sort(function(a,b) {
+
+ 			return a.source > b.source;
+
+		});
+
+		/*
+			Create the list items
+		*/
+		for (var i=0; i<known_words.length; i++)
+		{
+			all_translations += '<li>'+known_words[i].source+' -> '+known_words[i].translation+' <a href="javascript:void(0)" id="remove_'+i+'">remove</a></li>\n';		
+		}
+
+		$('#known-translations').html(all_translations);
+	}  
+
   })();
 </script>
 </html>
