@@ -157,7 +157,7 @@
 			/*
 				Get the index of the word pair from the id of the html element
 			*/
-			var index = $(this).attr('id').substring($(this).attr('id').length-1, $(this).attr('id').length);
+			var index = $(this).attr('id').substring(7, $(this).attr('id').length);
 			
 			/*
 				Remove the item
@@ -206,6 +206,10 @@
 	*/
 	function translate(text) {
 
+		if (text == '') {
+			return;
+		}
+		
 		for (var i=0; i<known_words.length; i++)
 		{
 			text = text.replace(
