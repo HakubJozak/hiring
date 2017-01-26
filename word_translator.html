@@ -7,51 +7,152 @@
 </head>
 <body>
   <div class="main-pane">
-    <h2>Word Translator</h2>
+    <h2 class = "mid">Word Translator</h2>
     <p>
       Welcome! This is a word translation tool. You provide the source words and the words that they
       should be translated to, and the website does the rest! The translator already knows some words,
       but it's important to remember that any words you teach it will be forgotten when the page is 
       refreshed.
     </p>
-    <div>
-      Source word: <input type="text" id="source-word" placeholder="party"/>
-      Translation word: <input type="text" id="translation-word" placeholder="fiesta">
+    <hr>
+    <div style = "margin-top:20px;">
+      <span class = "it">Source word:</span> <input type="text" id="source-word" placeholder="party"/>
+      <span class = "it">Translation word:</span> <input type="text" id="translation-word" placeholder="fiesta">
       <input type="button" id="learn-translate" value="Learn Translation!"/>
     </div>
-    <h4>Translator</h4>
+    <h3 class = "mid">Translator</h3>
     <p>
       You can enter a sentence into the textbox below in order to use the known
       translations to translate a sentence.
     </p>
-    <textarea name="translate-box" id="translate-box" cols="50" rows="10" placeholder="Enter the sentence to translate here!"></textarea>
-    <p><span id="translation-result">And your translation will appear here!</span></p>
+    <div id ="translatebox">
+      <textarea name="translate-box" id="translate-box" cols="50" rows="10" placeholder="Enter the sentence to translate here!"></textarea>
+      <p><span id="translation-result">And your translation will appear here!</span></p>
+    </div>
   </div>
   <div class="dictionary-pane">
-    <h2>Known Translations:</h2>
+    <h2 class = "mid">Known Translations:</h2>
     <p>
       These are all the words I know!
       They're in the form of "known word" -> "translation" in the list below.
     </p>
     <p>Hint: click on the "remove" link next a known to remove a known translation</p>
-    <ul id="known-translations"></ul>
+    <ul id="known-translations">
+    	<li>party -> fiesta</li>
+		<li>Hi -> Aloha</li>
+    </ul>
   </div>
 ​
 </body>
 <style type="text/css">
   .main-pane {
     float: left;
-    width: 75%;
+    width: 70%;
+	padding: 12px;
+	border-right: 2px dotted #cccccc;
   }
   .dictionary-pane {
     float: right;
     width: 25%;
+	padding: 8px;
+  }
+  body {
+	 font-family: Georgia, serif;
+  }
+  .mid {
+	  text-align: center;
+  }
+  .it {
+	  font-style: italic;
+  }
+  #translatebox {
+	  margin: auto;
+	  max-width: 50%;
   }
 </style>
 <script type="application/javascript">
   "use strict";
-  (function(){
-    // YOUR CODE GOES HERE
-  })();
+  $(document).ready(function(){
+	// track words entered into dictionary  
+	var record = {"from": ['party','Hi'],"to": ['fiesta','Aloha']};
+	// for ignoring capitalization during comparison
+	function findOut(string,array){
+		var b;
+  		array.forEach(function(name){
+    		if(name.toUpperCase() === string.toUpperCase()) 
+				b = name;
+  		}); return b;
+	}
+	// add shading for input field selection
+	$("input").focus(function(){
+		$(this).css("background-color","lightblue");
+	});
+	$("input").blur(function(){
+        $(this).css("background-color", "#ffffff");
+    });
+	// initiate button reactions
+	$("#learn-translate").click(function(){
+		// set up a variable that will create a new 'remove' line for each 'li' value and
+		// will delete from the 'record' object its corresponding word pair
+		var $remove = $('<a></a>',{
+			"click":function(){
+				var line = $(this).parent().text().split(" ");
+				record["from"].splice(record["from"].indexOf(line[0]),1);
+				record["to"].splice(record["to"].indexOf(line[2]),1);
+				$(this).parent().hide("slow",
+			function(){$(this).hide();});}})
+			.text("remove")
+			.css({"font-style":"italic"});
+		$remove.hover(function(){$(this).css('color','red');},function(){$(this).css('color','black');});
+		// set conditions for word-pairs to be added to the dictionary, otherwise warn of error
+		// in case of no proper entries or repeated entries
+		if ( findOut($("#source-word").val(),record["from"]) == undefined && 
+		findOut($("#translation-word").val(),record["to"]) == undefined ){
+			if($("#source-word").val() && $("#translation-word").val()){
+				record["from"].push($("#source-word").val());				// add word-pairs to the object 'record'
+				record["to"].push($("#translation-word").val());
+				$("#known-translations").append($("<li></li>").text		 // print out new word-pairs in a list
+				($("#source-word").val() + " -> " + $("#translation-word").val() + " ").append($remove));
+				$("#source-word").val(""); $("#translation-word").val("");	// reset the input fields
+			} else
+				alert("Please enter words in both fields!");
+		} else {
+			alert("Please enter new words only!");
+			$("#source-word").val(""); $("#translation-word").val("");
+		} // end if statements
+	}); // end button block
+	// add 'enter' key function for input fields	
+	$("#source-word").keyup(function(e){
+		if (e.keyCode == 13) $("#learn-translate").click();});
+	$("#translation-word").keyup(function(e){
+		if (e.keyCode == 13) $("#learn-translate").click();});
+	// initiate text translation based on dictionary entries
+	var totalText = [];										   // stores individual keystrokes
+	var n = 0;			 										// keeps track of which character is current
+	$("#translate-box").on('input',function(e){
+		var charCode = $("#translate-box").val().charCodeAt(n);  // numerical code of pressed key
+		
+		if(isNaN(charCode)){									 // checks for a backspace and updates accordingly
+			totalText.pop(totalText.length - 1);
+			n--;}
+		else {												   // if no backspace, continues as normal
+			totalText.push(String.fromCharCode(charCode));
+			n++;
+		}
+			var txtStr = totalText.join("");
+			var txtArr = txtStr.split(/[\s,.]+/);
+			// checks for available translations with each keystroke and eliminates punctuation
+			for(var i = 0; i<txtArr.length;i++){
+				var from = findOut(txtArr[i],record['from']);
+				var to = findOut(txtArr[i],record['to']);		 
+				if(from != undefined){
+					txtArr[i] = record["to"][record["from"].indexOf(from)];
+				} else if (to != undefined){
+					txtArr[i] = record["from"][record["to"].indexOf(to)];
+				}
+			}
+		$("#translation-result").text(txtArr.join(" "));
+	}); 
+  }); // end of input reading
 </script>
 </html>
