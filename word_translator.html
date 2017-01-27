@@ -1,57 +1,256 @@
 <!DOCTYPE html>
 <html>
 <head lang="en">
-  <meta charset="UTF-8">
-  <title>JS Test</title>
-  <script src="https://code.jquery.com/jquery-2.1.3.min.js" type="application/javascript"></script>
+    <meta charset="UTF-8">
+    <title>JS Test</title>
+    <script src="//code.jquery.com/jquery-2.1.3.min.js" type="application/javascript"></script>
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"/>
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css"/>
 </head>
 <body>
-  <div class="main-pane">
-    <h2>Word Translator</h2>
-    <p>
-      Welcome! This is a word translation tool. You provide the source words and the words that they
-      should be translated to, and the website does the rest! The translator already knows some words,
-      but it's important to remember that any words you teach it will be forgotten when the page is 
-      refreshed.
-    </p>
-    <div>
-      Source word: <input type="text" id="source-word" placeholder="party"/>
-      Translation word: <input type="text" id="translation-word" placeholder="fiesta">
-      <input type="button" id="learn-translate" value="Learn Translation!"/>
+<div class="container">
+    <div class="col-xs-12">
+        <div class="row">
+            <h1 class="page-header">Word Translator</h1>
+        </div>
+
+        <div class="row">
+            <!-- Left -->
+            <div class="dictionary-pane col-xs-12 col-sm-8">
+
+                <div class="row">
+                    <br/>
+                    <p>
+                        Welcome! This is a word translation tool. You provide the source words and the words that they
+                        should be translated to, and the website does the rest! The translator already knows some words,
+                        but it's important to remember that any words you teach it will be forgotten when the page is
+                        refreshed.
+                    </p>
+                </div>
+                <div class="row">
+                    <h3 class="page-header">Translator</h3>
+
+                    <textarea class="form-control" name="translate-box" id="translate-box" rows="10"
+                              placeholder="Enter the sentence to translate here!">You can enter a sentence into the textbox below in order to use the known translations to translate a sentence</textarea>
+
+                    <h3 class="page-header">Result</h3>
+
+                    <p id="translation-result">And your translation will appear here!</p>
+                </div>
+            </div>
+            <!-- Right -->
+            <div class="dictionary-pane col-xs-12 col-sm-4">
+                <!-- Add form -->
+                <form id="learn-form" class="form-horizontal col-xs-12">
+                    <br/>
+
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="source-word" placeholder="Source word (ex. party)"/>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" class="form-control" id="translation-word"
+                               placeholder="Translation word (ex. fiesta)"/>
+                    </div>
+                    <div class="form-group">
+                        <button type="submit" id="learn-translate" class="btn btn-primary">Learn Translation!</button>
+                    </div>
+                    <br/>
+                </form>
+                <h3 class="page-header">Known Translations</h3>
+                <!-- List -->
+                <ul id="known-translations" class="list-group"></ul>
+            </div>
+        </div>
     </div>
-    <h4>Translator</h4>
-    <p>
-      You can enter a sentence into the textbox below in order to use the known
-      translations to translate a sentence.
-    </p>
-    <textarea name="translate-box" id="translate-box" cols="50" rows="10" placeholder="Enter the sentence to translate here!"></textarea>
-    <p><span id="translation-result">And your translation will appear here!</span></p>
-  </div>
-  <div class="dictionary-pane">
-    <h2>Known Translations:</h2>
-    <p>
-      These are all the words I know!
-      They're in the form of "known word" -> "translation" in the list below.
-    </p>
-    <p>Hint: click on the "remove" link next a known to remove a known translation</p>
-    <ul id="known-translations"></ul>
-  </div>
-​
+</div>
 </body>
 <style type="text/css">
-  .main-pane {
-    float: left;
-    width: 75%;
-  }
-  .dictionary-pane {
-    float: right;
-    width: 25%;
-  }
+    .word-found {
+        background: greenyellow;
+        padding: 2px 3px;
+    }
 </style>
+<!-- JavaScript -->
 <script type="application/javascript">
-  "use strict";
-  (function(){
-    // YOUR CODE GOES HERE
-  })();
+    "use strict";
+
+    /* Words in database */
+    var wordsDatabase = {
+        'use': 'použití',
+        'sentence': 'věta',
+        'into': 'into',
+        'translate': 'přeložit'
+    };
+
+    /* Translator class */
+    function Translator(params) {
+        var obj = this;
+        var wordsList = $('#known-translations');
+
+        if (typeof params !== 'undefined') {
+            $.each(params, function (i, value) {
+                i = $.trim(i);
+
+                value = $.trim(value);
+                if (value) {
+                    obj[i] = value;
+                }
+            });
+        }
+
+        this.save = function () {
+            /* Check if word already exist in database */
+            if (obj.loaded()) {
+                alert('This word already exist in database');
+            } else {
+                obj.addToDatabase();
+            }
+
+            return this;
+        };
+
+        this.save = function () {
+            /* Check if word already exist in database */
+            if (obj.loaded()) {
+                alert('This word already exist in database');
+            } else {
+                obj.addToDatabase();
+            }
+
+            return this;
+        };
+
+        this.loaded = function () {
+            return (typeof obj.source !== 'undefined' &&
+                    typeof wordsDatabase[obj.source] !== 'undefined');
+        };
+
+        this.addToDatabase = function () {
+            /* Add word to database */
+            wordsDatabase[obj.source] = obj.translation;
+
+            var wordSource = obj.source;
+            var wordTranslation = obj.translation;
+            wordsList.prepend('<li data-source="' + wordSource + '" class="list-group-item"><button type="button" class="btn btn-xs btn-warning pull-right">delete</button> <b>' + wordSource + '</b><i> &gt; ' + wordTranslation + '</i></li>');
+
+            obj.live();
+
+            return this;
+        };
+
+        this.refreshWords = function () {
+            wordsList.html('');
+
+            console.log('wordsDatabase', wordsDatabase);
+            $.each(wordsDatabase, function (i, value) {
+                var wordSource = i;
+                var wordTranslation = wordsDatabase[i];
+                wordsList.prepend('<li data-source="' + wordSource + '" class="list-group-item"><button type="button" class="btn btn-xs btn-warning pull-right">delete</button> <b>' + wordSource + '</b><i> &gt; ' + wordTranslation + '</i></li>');
+            });
+
+            return this;
+        };
+
+        this.live = function () {
+            var translationResult = $('#translation-result');
+            var translationBox = $('#translate-box').val();
+            var translationWords = translationBox.split(/[\s,.]+/);
+
+            console.log('words', translationWords);
+
+            /* Replace words */
+            if (translationWords.length) {
+                $.each(translationWords, function (i, value) {
+
+                    if (value) {
+                        /* If word is found */
+                        if (typeof wordsDatabase[value] !== 'undefined') {
+                            /* Replace word */
+                            translationBox = translationBox.replace(new RegExp("( |,|^)" + value + "( |$|.)", 'i'), '$1<span class="word-found">' + wordsDatabase[value] + '</span>$2');
+                        }
+                    }
+                });
+            }
+
+            $('#translation-result').html(translationBox);
+
+            return this;
+        };
+
+        return this;
+    }
+
+
+    $(document).ready(function () {
+
+        var translator = new Translator;
+
+        /* Refresh list of words */
+        translator.refreshWords();
+        /* Run live translation for existing text */
+        translator.live();
+
+        /* Learn translation */
+        $(document).on({
+            submit: function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var learnTranslate = $('#learn-translate');
+
+                var sourceWord = $('#source-word').val();
+                var sourceWord = $.trim(sourceWord);
+
+                var translationWord = $('#translation-word').val();
+                var translationWord = $.trim(translationWord);
+
+                /* Valid */
+                if (sourceWord && translationWord) {
+                    /* Added word */
+                    var addedWord = new Translator({
+                        'source': sourceWord,
+                        'translation': translationWord
+                    }).save();
+
+                } else {
+                    alert('Please add source word and translation word');
+                }
+            }
+        }, '#learn-form');
+
+        /* Delete word */
+        $(document).on({
+            click: function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                var btn = $(this);
+                var btnLi = btn.parents('li');
+                var sourceWord = btnLi.data('source');
+
+                delete wordsDatabase[sourceWord];
+
+                btnLi.remove();
+                translator.live();
+            }
+        }, '#known-translations .btn');
+
+        /* Live translator */
+        $(document).on({
+            keyup: function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                translator.live();
+            }
+        }, '#translate-box');
+    });
 </script>
 </html>
