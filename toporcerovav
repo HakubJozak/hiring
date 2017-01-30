@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+  <meta charset="UTF-8">
+  <title>JS Test</title>
+  <script src="https://code.jquery.com/jquery-2.1.3.min.js" type="application/javascript"></script>
+</head>
+<body>
+  <div class="main-pane">
+    <h2>Word Translator</h2>
+    <p>
+      Welcome! This is a word translation tool. You provide the source words and the words that they
+      should be translated to, and the website does the rest! The translator already knows some words,
+      but it's important to remember that any words you teach it will be forgotten when the page is 
+      refreshed.
+    </p>
+    <div>
+      Source word: <input type="text" id="source-word" placeholder="party"/>
+      Translation word: <input type="text" id="translation-word" placeholder="fiesta">
+      <input type="button" id="learn-translate" value="Learn Translation!"/>
+    </div>
+    <h4>Translator</h4>
+    <p>
+      You can enter a sentence into the textbox below in order to use the known
+      translations to translate a sentence.
+    </p>
+    <textarea name="translate-box" id="translate-box" cols="50" rows="10" placeholder="Enter the sentence to translate here!"></textarea>
+    <p><span id="translation-result">And your translation will appear here!</span></p>
+  </div>
+  <div class="dictionary-pane">
+    <h2>Known Translations:</h2>
+    <p>
+      These are all the words I know!
+      They're in the form of "known word" -> "translation" in the list below.
+    </p>
+    <p>Hint: click on the "remove" link next a known to remove a known translation</p>
+    <ul id="known-translations"></ul>
+  </div>
+​
+</body>
+<style type="text/css">
+  .main-pane {
+    float: left;
+    width: 75%;
+  }
+  .dictionary-pane {
+    float: right;
+    width: 25%;
+  }
+</style>
+<script type="application/javascript">
+  "use strict";
+  (function(){
+    var addWordButton = $('#learn-translate'),
+        textBox = $('#translate-box'),
+        translateButton = $('#translate-text'),
+        result,
+        words = {
+          thanks: 'gracias',
+          good: 'bueno',
+          friend: 'amigo',
+          milk: 'leche',
+          man: 'hombre',
+          drink: 'beber',
+        };
+    function createLinkElement(word) {
+      return $('<a>').attr('data-key', word)
+      .attr('href', '#')
+      .css('margin', '0px 12px')
+      .appendTo($('#' + word));
+    }
+    function listWords() {
+      for (var word in words) {
+        $("<li id='" + word + "'>").text(word + ' |  ' + words[word]).appendTo('#known-translations');
+        createLinkElement(word)
+      }
+    };
+    listWords(); 
+    function checkIfWordExist(word, translation) {
+      if (words[word] === undefined || words[word] === null) {
+        addWord(word, translation);
+      }
+    }
+    var addWord = function(key, value) {
+      words[key] = value
+      $("<li id='" + key + "'>").text(key + ' | ' + value).appendTo('#known-translations');
+      return words
+    }
+    function removeWord() {
+      var key = this.dataset.key
+    }
+    $('#known-translations li a').on('click', removeWord)
+    addWordButton.on('click', function() {
+      var newWord = $('#source-word').val();
+      var translation = $('#translation-word').val();
+      checkIfWordExist(newWord, translation);
+      console.log(words);
+    });
+    var removePunc = function (word) {
+      return word.replace();
+    }
+    function capitalize(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1); 
+    }
+    textBox.keyup(function(e) {
+      var text = $('#translate-box').val();
+      
+      if(e.keyCode == 32 || e.keyCode == 190) {
+        var textArr = text.split(' ');
+        result = [];
+        textArr.reduce(function(str, word) {
+          if (words[removePunc(word)]) {
+            result.push(words[removePunc(word)]);
+          } else {
+            result.push(word);
+          }
+        }, result);
+        var resultStr = result.join(' ');
+        $('#translation-result').html(capitalize(resultStr));
+      }
+    });  
+  })();
+</script>
+</html>
