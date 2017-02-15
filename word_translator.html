@@ -18,6 +18,27 @@
       Source word: <input type="text" id="source-word" placeholder="party"/>
       Translation word: <input type="text" id="translation-word" placeholder="fiesta">
       <input type="button" id="learn-translate" value="Learn Translation!"/>
+    
+      <script>
+         
+        var dict = [];
+      
+        $("#learn-translate").click(function() {
+          var sword = $("#source-word").val();
+          var tword = $("#translation-word").val();
+          dict[sword] = tword;
+          
+          var i;
+          var d = "";
+          
+          for(i in dict) {
+            d += i + " -> " + dict[i] + "<br>";
+          } 
+          $(".dictionary-pane").html(d);
+          });
+        
+      </script>
+      
     </div>
     <h4>Translator</h4>
     <p>
