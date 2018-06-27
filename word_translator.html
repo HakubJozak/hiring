@@ -11,12 +11,12 @@
     <p>
       Welcome! This is a word translation tool. You provide the source words and the words that they
       should be translated to, and the website does the rest! The translator already knows some words,
-      but it's important to remember that any words you teach it will be forgotten when the page is 
+      but it's important to remember that any words you teach it will be forgotten when the page is
       refreshed.
     </p>
     <div>
-      Source word: <input type="text" id="source-word" placeholder="party"/>
-      Translation word: <input type="text" id="translation-word" placeholder="fiesta">
+      Source word: <input type="text" id="source-word" placeholder="party" value=''/>
+      Translation word: <input type="text" id="translation-word" placeholder="fiesta" value=''>
       <input type="button" id="learn-translate" value="Learn Translation!"/>
     </div>
     <h4>Translator</h4>
@@ -24,7 +24,8 @@
       You can enter a sentence into the textbox below in order to use the known
       translations to translate a sentence.
     </p>
-    <textarea name="translate-box" id="translate-box" cols="50" rows="10" placeholder="Enter the sentence to translate here!"></textarea>
+    <textarea name="translate-box" id="translate-box" cols="50" rows="10" placeholder="Enter the sentence to translate here!" value=''></textarea></br>
+    <input type="button" id="sentence-translate" value="Translate sentence"/>
     <p><span id="translation-result">And your translation will appear here!</span></p>
   </div>
   <div class="dictionary-pane">
@@ -47,11 +48,43 @@
     float: right;
     width: 25%;
   }
+
 </style>
 <script type="application/javascript">
   "use strict";
-  (function(){
-    // YOUR CODE GOES HERE
-  })();
+  var known_words = [];
+
+  $(document).ready(function(){
+    $('#learn-translate').click(function(){
+      var obj = new Object();
+      var source_word = $('#source-word').val();
+      var translation_word = $('#translation-word').val();
+      obj.origin = source_word;
+      obj.trans  = translation_word;
+      known_words.push(obj);
+      var button = "<button id='remove'>Remove</button>"
+      $('ul').append("<li>" + source_word + " -> " + translation_word + " "
+      +  button + "</li>");
+    });
+  });
+
+  $(document).on('click', '#remove', function(){
+      $(this).parent('li').remove();
+    });
+
+  $(document).ready(function(){
+    $('#sentence-translate').click(function(){
+      var sentence = $('#translate-box').val();
+      var  sentence_words = $('#translate-box').val().split(' ');
+      sentence_words.forEach(function(el){
+        var result =  known_words.filter(obj => obj.origin == el);
+        sentence = sentence.replace(el, result[0].trans).split(' ').reverse().join(' ');
+      });
+      $('#translation-result').append('<p>'
+        + sentence +
+      '</p>').css({'color': 'blue'})
+    });
+  });
+
 </script>
 </html>
